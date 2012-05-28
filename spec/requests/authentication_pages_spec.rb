@@ -69,7 +69,18 @@ describe "Authentication" do
                 end
               end     # "in the Microposts controller"
             
-                
+              describe "in the Relationships controller" do
+                  describe "submitting to the create action" do
+                    before { post relationships_path }
+                    specify { response.should redirect_to(signin_path) }
+                  end
+
+                  describe "submitting to the destroy action" do
+                    before { delete relationship_path(1) }
+                    specify { response.should redirect_to(signin_path) }          
+                  end
+                end
+            
          end  # for non-signed-in users     
 
         describe "in the Users controller" do
@@ -85,28 +96,38 @@ describe "Authentication" do
           end
        
           describe "visiting the user index" do
-                    before { visit users_path }
-                    it { should have_selector('title', text: 'Sign in') }
-            end       
+            before { visit users_path }
+            it { should have_selector('title', text: 'Sign in') }
+          end
+          
+          describe "visiting the following page" do
+            before { visit following_user_path(user) }
+            it { should have_selector('title', text: 'Sign in') }
+          end
+
+          describe "visiting the followers page" do
+            before { visit followers_user_path(user) }
+            it { should have_selector('title', text: 'Sign in') }
         end
+                 
       end
+    end
       
-      describe "as non-admin user" do
-            let(:user) { FactoryGirl.create(:user) }
-            let(:non_admin) { FactoryGirl.create(:user) }
+    describe "as non-admin user" do
+      let(:user) { FactoryGirl.create(:user) }
+      let(:non_admin) { FactoryGirl.create(:user) }
 
-            before { sign_in non_admin }
+      before { sign_in non_admin }
 
-            describe "submitting a DELETE request to the Users#destroy action" do
-              before { delete user_path(user) }
-              specify { response.should redirect_to(root_path) }        
-            end
-          end 
-      
-      
-    end  # Authorization
+      describe "submitting a DELETE request to the Users#destroy action" do
+        before { delete user_path(user) }
+        specify { response.should redirect_to(root_path) }        
+      end
+    end 
+        
+  end  # Authorization
   
-    describe "as wrong user" do
+  describe "as wrong user" do
         let(:user) { FactoryGirl.create(:user) }
         let(:wrong_user) { FactoryGirl.create(:user, email: "wrong@example.com") }
         before { sign_in user }
